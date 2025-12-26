@@ -7,18 +7,21 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; padding-bottom: 100px; }
         .stats { background: var(--card); padding: 20px; border-radius: 15px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 20px; }
         h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
         .xp-bar { background: #334155; height: 20px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
         #progress { background: var(--primary); height: 100%; width: 0%; transition: width 0.3s; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 350px; }
-        button { background: var(--card); border: 2px solid var(--primary); color: white; padding: 15px 10px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; }
-        button:active { transform: scale(0.95); background: var(--primary); }
-        .admin { margin-top: 30px; width: 100%; max-width: 350px; border-top: 1px solid #334155; padding-top: 20px; }
-        textarea { width: 100%; height: 80px; background: #000; color: #0f0; font-family: monospace; border: 1px solid #334155; border-radius: 5px; margin-bottom: 10px; padding: 10px; box-sizing: border-box; }
+        .btn-grid { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 350px; }
+        .ex-row { display: flex; gap: 5px; }
+        .ex-btn { flex-grow: 1; background: var(--card); border: 2px solid var(--primary); color: white; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; }
+        .del-btn { background: #ef4444; border: none; color: white; border-radius: 10px; padding: 0 15px; }
+        .add-section { margin-top: 20px; width: 100%; max-width: 350px; display: flex; gap: 5px; }
+        input { flex-grow: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--primary); background: #000; color: #fff; }
+        .admin { margin-top: 40px; width: 100%; max-width: 350px; border-top: 1px solid #334155; padding-top: 20px; }
+        textarea { width: 100%; height: 60px; background: #000; color: #0f0; font-family: monospace; border: 1px solid #334155; border-radius: 5px; margin-bottom: 10px; padding: 10px; box-sizing: border-box; }
         .admin-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .small-btn { font-size: 0.8rem; padding: 8px; border-color: #64748b; }
+        .small-btn { font-size: 0.8rem; padding: 8px; border-color: #64748b; background: transparent; color: #64748b; border: 1px solid; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -29,21 +32,24 @@
         <p id="xp-text">XP: 0 / 100</p>
     </div>
 
-    <div class="btn-grid" id="exercise-container">
-        </div>
+    <div class="btn-grid" id="exercise-container"></div>
+
+    <div class="add-section">
+        <input type="text" id="new-ex-name" placeholder="Exercise Name...">
+        <button onclick="addNewExercise()" style="background: var(--primary); border:none; padding:10px 20px; border-radius:10px; color:white;">Add</button>
+    </div>
 
     <div class="admin">
-        <p style="font-size: 0.8rem; opacity: 0.7;">Data Transfer (Export/Import)</p>
         <textarea id="data-box" placeholder="Paste data here..."></textarea>
         <div class="admin-btns">
-            <button class="small-btn" onclick="exportData()">Copy My Data</button>
+            <button class="small-btn" onclick="exportData()">Copy Data</button>
             <button class="small-btn" onclick="importData()">Import Data</button>
         </div>
-        <button class="small-btn" style="width:100%; margin-top:10px; border-color:red;" onclick="resetGame()">Reset Everything</button>
+        <button class="small-btn" style="width:100%; margin-top:20px; color: #ef4444;" onclick="resetGame()">Reset App</button>
     </div>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('workoutRPG')) || { xp: 0, level: 1, exercises: ["Pushups", "Squats", "Crunches", "Plank"] };
+    let state = JSON.parse(localStorage.getItem('workoutRPG')) || { xp: 0, level: 1, exercises: ["lat pulldowns","flies","incline press","overhead press","seated leg","lying leg","hack squat","calf raises","hanging leg raises"] };
 
     function save() { 
         localStorage.setItem('workoutRPG', JSON.stringify(state)); 
@@ -53,18 +59,36 @@
     function render() {
         document.getElementById('level-display').innerText = `Level ${state.level} Warrior`;
         const xpToLevel = state.level * 100;
-        const percent = (state.xp / xpToLevel) * 100;
-        document.getElementById('progress').style.width = percent + '%';
+        document.getElementById('progress').style.width = (state.xp / xpToLevel) * 100 + '%';
         document.getElementById('xp-text').innerText = `XP: ${state.xp} / ${xpToLevel}`;
 
         const container = document.getElementById('exercise-container');
         container.innerHTML = '';
-        state.exercises.forEach(ex => {
-            const btn = document.createElement('button');
-            btn.innerText = `+ ${ex}`;
-            btn.onclick = () => addXP(10);
-            container.appendChild(btn);
+        state.exercises.forEach((ex, index) => {
+            const div = document.createElement('div');
+            div.className = 'ex-row';
+            div.innerHTML = `
+                <button class="ex-btn" onclick="addXP(10)">+ ${ex}</button>
+                <button class="del-btn" onclick="removeExercise(${index})">✕</button>
+            `;
+            container.appendChild(div);
         });
+    }
+
+    function addNewExercise() {
+        const input = document.getElementById('new-ex-name');
+        if (input.value.trim()) {
+            state.exercises.push(input.value.trim());
+            input.value = '';
+            save();
+        }
+    }
+
+    function removeExercise(index) {
+        if(confirm("Delete this exercise?")) {
+            state.exercises.splice(index, 1);
+            save();
+        }
     }
 
     function addXP(amount) {
@@ -82,27 +106,22 @@
         dataBox.value = btoa(JSON.stringify(state));
         dataBox.select();
         document.execCommand('copy');
-        alert("Data copied to clipboard! Now open your Home Screen app and paste it into the box.");
+        alert("Data copied! Paste this into your Home Screen app.");
     }
 
     function importData() {
         try {
             const dataBox = document.getElementById('data-box');
-            const decoded = JSON.parse(atob(dataBox.value));
-            if (decoded.xp !== undefined) {
-                state = decoded;
-                save();
-                alert("Success! Your progress has been loaded.");
-                dataBox.value = "";
-            }
-        } catch (e) {
-            alert("Error: Invalid data. Make sure you copied the whole code!");
-        }
+            state = JSON.parse(atob(dataBox.value));
+            save();
+            alert("Success!");
+            dataBox.value = "";
+        } catch (e) { alert("Invalid data."); }
     }
 
     function resetGame() {
-        if(confirm("Delete all progress?")) {
-            state = { xp: 0, level: 1, exercises: ["Pushups", "Squats", "Crunches", "Plank"] };
+        if(confirm("Delete everything?")) {
+            state = { xp: 0, level: 1, exercises: [] };
             save();
         }
     }
