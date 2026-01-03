@@ -2,4 +2,23 @@
 Cool little gamified workout app
 "Workout RPG: A privacy-first, zero-latency gym tracker designed for the gym floor. No accounts, no tracking, just gains. Save it to your home screen and level up your training. Get points for turning up, for consistency, level up to be the final boss"
 
-Instructions: Save as html and save to your home screen on IOS. You can save the data. If you clear your browser cache your data will be gone though, since it uses local storage. I will level the whole app up, if i get interest. I am making this public to help people get healthier by being motivated to go to the gym. If you like it please share it.
+## 🏋️ The Philosophy
+Traditional gym apps are too slow. They have ads, paywalls, and take 30 seconds to log a single set. Workout RPG is designed to be used between sets.
+
+Fast: One tap to log.
+
+Private: Your data never leaves your device.
+
+Fun: Real-time XP and Leveling system.
+
+## 📱 How to 'Install'
+This is a Progressive Web App (PWA). For the best experience:
+
+Open the link in Safari (iOS) or Chrome (Android).
+
+Tap 'Share' or the three dots.
+
+Select 'Add to Home Screen'.
+
+## 🛡️ Data & Backups
+This app uses LocalStorage. This means your data stays on your phone. To ensure you never lose your progress, use the Export Data button once a week and save the string to your Notes app or iCloud.
